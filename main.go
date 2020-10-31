@@ -137,7 +137,7 @@ func run() error {
 					return
 				}
 
-				if _, ok := counts[e.UserID]; ok {
+				if _, ok := counts[e.UserID]; ok && e.UserID != discordMessage.Author.ID {
 					// user has already voted
 					dg.MessageReactionRemove(channel, discordMessage.ID, e.MessageReaction.Emoji.Name, e.UserID)
 					return
