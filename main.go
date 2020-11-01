@@ -13,7 +13,7 @@ import (
 )
 
 const PIPE = `\\.\pipe\GTATrilogyChaosModPipe`
-const COOLDOWN = time.Second * 10
+const COOLDOWN = time.Minute
 
 func main() {
 	if err := run(); err != nil {
@@ -27,7 +27,7 @@ func run() error {
 		return err
 	}
 	channel := os.Getenv("DISCORD_CHANNEL")
-	fmt.Println(channel)
+	fmt.Println("using channel:", channel)
 
 	if err := dg.Open(); err != nil {
 		return err
@@ -42,6 +42,11 @@ func run() error {
 	effects := Effects()
 
 	var discordMessage *discordgo.Message
+	defer func() {
+		if discordMessage != nil {
+			dg.ChannelMessageDelete(channel, discordMessage.ID) // delete on shutdown
+		}
+	}()
 	var remoteReactHandler func()
 	var options [3]Effect
 	var counts map[string]int // map from username to vote count
@@ -71,34 +76,44 @@ func run() error {
 						winner = i
 					}
 				}
-				fmt.Println("WINNER!", winner, options[winner])
+				fmt.Println("WINNER!", winner, options[winner].Name())
 
 				message := fmt.Sprintf(
-					"vote:%s;%d;;%s;%d;;%s;%d;;%d",
+					"votes:%s;%d;;%s;%d;;%s;%d;;%d",
 					options[0].ID(), list[0],
 					options[1].ID(), list[1],
 					options[2].ID(), list[2],
 					winner,
 				)
-				n, err := ln.Write([]byte(message))
-				fmt.Println("writing", message, n, err)
+				fmt.Println("writing", message)
+				_, err := ln.Write([]byte(message))
+				if err != nil {
+					return err
+				}
 
 				effect := options[winner]
-				message = fmt.Sprintf("%s:N/A:0", EffectToMessage(effect))
-				n, err = ln.Write([]byte(message))
-				fmt.Println("writing", message, n, err)
+				message = fmt.Sprintf("%s:N/A:0", EffectToMessage(effect, COOLDOWN))
+				fmt.Println("writing", message)
+				_, err = ln.Write([]byte(message))
+				if err != nil {
+					return err
+				}
+
+				dg.ChannelMessageDelete(channel, discordMessage.ID)
 
 				title = fmt.Sprintf("Winner: %s\n\nVote for the next effect!", options[winner].Name())
 			} else {
 				idx := rand.Intn(len(effects))
 				effect := effects[idx]
-				message := fmt.Sprintf("%s:N/A:0", EffectToMessage(effect))
+				message := fmt.Sprintf("%s:N/A:0", EffectToMessage(effect, COOLDOWN))
 
-				n, err := ln.Write([]byte(message))
-				fmt.Println("writing", message, n, err)
+				fmt.Println("writing", message)
+				_, err := ln.Write([]byte(message))
+				if err != nil {
+					return err
+				}
 
 				title = "Vote for the next effect!"
-
 			}
 
 			options[0] = effects[rand.Intn(len(effects))]

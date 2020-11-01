@@ -1,20 +1,23 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type Effect interface {
 	Name() string
 	ID() string
 }
 
-func EffectToMessage(effect Effect) string {
+func EffectToMessage(effect Effect, duration time.Duration) string {
 	switch e := effect.(type) {
 	case FunctionEffect:
-		return fmt.Sprintf("effect:%s:%d:%s", e.id, 30000, e.name)
+		return fmt.Sprintf("effect:%s:%d:%s", e.id, duration.Milliseconds(), e.name)
 	case WeatherEffect:
-		return fmt.Sprintf("weather:%d:%d:%s", e.weather, 30000, e.name)
+		return fmt.Sprintf("weather:%d:%d:%s", e.weather, duration.Milliseconds(), e.name)
 	case SpawnVehicleEffect:
-		return fmt.Sprintf("spawn_vehicle:%d:%d:%s", e.model, 30000, e.id)
+		return fmt.Sprintf("spawn_vehicle:%d:%d:%s", e.model, duration.Milliseconds(), e.id)
 	case TeleportationEffect:
 		return fmt.Sprintf("teleport:%d,%d,%d", int(e.location.x), int(e.location.y), int(e.location.z))
 	}
