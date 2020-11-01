@@ -101,7 +101,7 @@ func run() error {
 
 				dg.ChannelMessageDelete(channel, discordMessage.ID)
 
-				title = fmt.Sprintf("Winner: %s\n\nVote for the next effect!", options[winner].Name())
+				title = fmt.Sprintf("Winner: %s (%d votes)\n\nVote for the next effect!", options[winner].Name(), list[winner])
 			} else {
 				idx := rand.Intn(len(effects))
 				effect := effects[idx]
