@@ -19,7 +19,7 @@ func EffectToMessage(effect Effect, duration time.Duration) string {
 	case SpawnVehicleEffect:
 		return fmt.Sprintf("spawn_vehicle:%d:%d:%s", e.model, duration.Milliseconds(), e.id)
 	case TeleportationEffect:
-		return fmt.Sprintf("teleport:%d,%d,%d", int(e.location.x), int(e.location.y), int(e.location.z))
+		return fmt.Sprintf("teleport:%d,%d,%d:30000:%s", int(e.location.x), int(e.location.y), int(e.location.z), e.name)
 	}
 	return ""
 }
