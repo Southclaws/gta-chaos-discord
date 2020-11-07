@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"time"
+
+	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 type Effect interface {
@@ -11,13 +13,15 @@ type Effect interface {
 }
 
 func EffectToMessage(effect Effect, duration time.Duration) string {
+	c := rand.Intn(2) + 1
+	d := duration.Milliseconds() * int64(c)
 	switch e := effect.(type) {
 	case FunctionEffect:
-		return fmt.Sprintf("effect:%s:%d:%s", e.id, duration.Milliseconds(), e.name)
+		return fmt.Sprintf("effect:%s:%d:%s", e.id, d, e.name)
 	case WeatherEffect:
-		return fmt.Sprintf("weather:%d:%d:%s", e.weather, duration.Milliseconds(), e.name)
+		return fmt.Sprintf("weather:%d:%d:%s", e.weather, d, e.name)
 	case SpawnVehicleEffect:
-		return fmt.Sprintf("spawn_vehicle:%d:%d:%s", e.model, duration.Milliseconds(), e.id)
+		return fmt.Sprintf("spawn_vehicle:%d:%d:%s", e.model, d, e.id)
 	case TeleportationEffect:
 		return fmt.Sprintf("teleport:%d,%d,%d:30000:%s", int(e.location.x), int(e.location.y), int(e.location.z), e.name)
 	}
